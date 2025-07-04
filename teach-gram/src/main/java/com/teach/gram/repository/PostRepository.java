@@ -11,9 +11,11 @@ import java.util.Optional;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    boolean existsByTituloAndUsuario(String titulo, User usuario);
+    List<Post> findByUser(User usuario);
 
-    List<Post> findByUsuario(User usuario);
+    Optional<Post> findByIdAndUser(Long id, User usuario);
 
-    Optional<Post> findByIdAndUsuario(Long id, User usuario);
+    List<Post> findByUserIdAndPrivatePostFalse(Long userId);
+
+    List<Post> findByUserIdAndPrivatePostFalseAndDeletedFalse(Long userId);
 }

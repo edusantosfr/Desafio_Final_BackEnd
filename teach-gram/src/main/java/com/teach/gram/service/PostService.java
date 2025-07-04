@@ -2,7 +2,7 @@ package com.teach.gram.service;
 
 import com.teach.gram.dto.req.post.PostPatchReqDTO;
 import com.teach.gram.dto.req.post.PostReqDTO;
-import com.teach.gram.dto.res.PostResDTO;
+import com.teach.gram.dto.res.post.PostResDTO;
 import com.teach.gram.model.Post;
 import com.teach.gram.model.User;
 import com.teach.gram.repository.PostRepository;
@@ -18,56 +18,54 @@ public class PostService {
     @Autowired
     private PostRepository postRepository;
 
-    public PostResDTO createTask(PostReqDTO dto) {
+    public PostResDTO createPost(PostReqDTO dto) {
 
-        if (dto.titulo() == null)
-            throw new RuntimeException("Title cannot be null");
-
-        if (dto.descricao() == null)
-            throw new RuntimeException("Description cannot be null");
-
-        if (dto.status() == null)
-            throw new RuntimeException("Status cannot be null");
-
-
-        if (dto.titulo().isEmpty())
+        if (dto.title().isEmpty())
             throw new RuntimeException("Title cannot be empty");
-
-        if (dto.descricao().isEmpty())
-            throw new RuntimeException("Description cannot be empty");
 
         Post post = new Post();
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        post.setTitulo(dto.titulo());
-        post.setDescricao(dto.descricao());
-        post.setStatus(dto.status());
-        post.setUsuario(user);
-
-        boolean response = postRepository.existsByTituloAndUsuario(post.getTitulo(), user);
-
-        if (response) {
-            throw new RuntimeException("Task already exists");
-        }
+        post.setTitle(dto.title());
+        post.setDescription(dto.description());
+        post.setPhotoLink(dto.photoLink());
+        post.setVideoLink(dto.videoLink());
+        post.setUser(user);
 
         postRepository.save(post);
 
-        return new PostResDTO(post.getId(), post.getTitulo(), post.getDescricao(), post.getStatus());
+        return new PostResDTO(post.getId(), post.getTitle(), post.getDescription(), post.getPhotoLink(), post.getVideoLink());
     }
 
-    public List<PostResDTO> getAllTasks() {
+    public List<PostResDTO> getAllMyPosts() {
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        List<Post> posts = postRepository.findByUsuario(user);
+        List<Post> posts = postRepository.findByUser(user);
 
         return posts.stream()
                 .map(post -> new PostResDTO(
                         post.getId(),
-                        post.getTitulo(),
-                        post.getDescricao(),
-                        post.getStatus()
+                        post.getTitle(),
+                        post.getDescription(),
+                        post.getPhotoLink(),
+                        post.getVideoLink()
+                ))
+                .toList();
+    }
+
+    public List<PostResDTO> getPublicAndActivePostsByUserId(Long userId) {
+        
+        List<Post> posts = postRepository.findByUserIdAndPrivatePostFalseAndDeletedFalse(userId);
+
+        return posts.stream()
+                .map(post -> new PostResDTO(
+                        post.getId(),
+                        post.getTitle(),
+                        post.getDescription(),
+                        post.getPhotoLink(),
+                        post.getVideoLink()
                 ))
                 .toList();
     }
@@ -76,7 +74,7 @@ public class PostService {
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Post post = postRepository.findByIdAndUsuario(id, user)
+        Post post = postRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
         return new PostResDTO(post.getId(), post.getTitulo(), post.getDescricao(), post.getStatus());
@@ -86,7 +84,7 @@ public class PostService {
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Post post = postRepository.findByIdAndUsuario(id, user)
+        Post post = postRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
         post.setDescricao(postPatchReqDTO.descricao());
@@ -100,7 +98,7 @@ public class PostService {
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Post post = postRepository.findByIdAndUsuario(id, user)
+        Post post = postRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
         postRepository.delete(post);

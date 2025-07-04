@@ -2,7 +2,7 @@ package com.teach.gram.controller;
 
 import com.teach.gram.dto.req.post.PostPatchReqDTO;
 import com.teach.gram.dto.req.post.PostReqDTO;
-import com.teach.gram.dto.res.PostResDTO;
+import com.teach.gram.dto.res.post.PostResDTO;
 import com.teach.gram.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,27 +11,36 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/tasks")
+@RequestMapping("/posts")
 public class PostController {
 
     @Autowired
     private PostService postService;
 
     @PostMapping
-    public PostResDTO createTask(
+    public PostResDTO createPost(
             @RequestBody PostReqDTO dto
     ) {
-        PostResDTO response = postService.createTask(dto);
+        PostResDTO response = postService.createPost(dto);
 
         return response;
     }
 
     @GetMapping
-    public ResponseEntity<List<PostResDTO>> getAllTasks() {
+    public ResponseEntity<List<PostResDTO>> getAllMyPosts() {
 
-        List<PostResDTO> tasks = postService.getAllTasks();
+        List<PostResDTO> posts = postService.getAllMyPosts();
 
-        return ResponseEntity.ok(tasks);
+        return ResponseEntity.ok(posts);
+    }
+
+    @GetMapping("/users/{userId}/posts/public")
+    public ResponseEntity<List<PostResDTO>> getPublicAndActivePosts(
+            @PathVariable Long userId
+    ) {
+        List<PostResDTO> posts = postService.getPublicAndActivePostsByUserId(userId);
+
+        return ResponseEntity.ok(posts);
     }
 
     @GetMapping("/{id}")
