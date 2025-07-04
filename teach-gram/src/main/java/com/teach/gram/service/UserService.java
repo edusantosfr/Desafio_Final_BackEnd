@@ -4,9 +4,7 @@ import com.teach.gram.dto.req.login.LoginReqDTO;
 import com.teach.gram.dto.req.user.UserPatchReqDTO;
 import com.teach.gram.dto.req.user.UserReqDTO;
 import com.teach.gram.dto.res.login.LoginResDTO;
-import com.teach.gram.dto.res.post.PostResDTO;
 import com.teach.gram.dto.res.user.UserResDTO;
-import com.teach.gram.model.Post;
 import com.teach.gram.model.User;
 import com.teach.gram.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +38,7 @@ public class UserService {
         if (userRepository.existsByUsername(dto.username()))
             throw new RuntimeException("Username already in use");
 
-        if (userRepository.existsByEmail(dto.email()))
+        if (userRepository.existsByMail(dto.mail()))
             throw new RuntimeException("Email already in use");
 
         if (userRepository.existsByPhone(dto.phone()))
@@ -48,7 +46,7 @@ public class UserService {
 
         User user = new User();
         user.setName(dto.name());
-        user.setMail(dto.email());
+        user.setMail(dto.mail());
         user.setUsername(dto.username());
         user.setDescription(dto.description());
         user.setPhone(dto.phone());

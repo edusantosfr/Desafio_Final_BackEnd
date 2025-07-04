@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -70,37 +71,78 @@ public class PostService {
                 .toList();
     }
 
-    public PostResDTO getTaskById(Long id) {
+    public PostResDTO getMyPostById(Long id) {
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User userAuth = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Post post = postRepository.findByIdAndUser(id, user)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+        Post post = postRepository.findByIdAndUser(id, userAuth)
+                .orElseThrow(() -> new RuntimeException("Post not found."));
 
-        return new PostResDTO(post.getId(), post.getTitulo(), post.getDescricao(), post.getStatus());
+        return new PostResDTO(post.getId(), post.getTitle(), post.getDescription(), post.getPhotoLink(), post.getVideoLink());
     }
 
-    public PostResDTO updateTitleOrStatus(Long id, PostPatchReqDTO postPatchReqDTO) {
+    public PostResDTO getPostById(Long id) {
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Post not found."));
 
-        Post post = postRepository.findByIdAndUser(id, user)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+        return new PostResDTO(post.getId(), post.getTitle(), post.getDescription(), post.getPhotoLink(), post.getVideoLink());
+    }
 
-        post.setDescricao(postPatchReqDTO.descricao());
+    public PostResDTO updatePost(Long id, PostPatchReqDTO postPatchReqDTO) {
+
+        User userAuth = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Post post = postRepository.findByIdAndUser(id, userAuth)
+                .orElseThrow(() -> new RuntimeException("Post not found."));
+
+        post.setTitle(postPatchReqDTO.title());
+        post.setDescription(postPatchReqDTO.description());
+        post.setPhotoLink(postPatchReqDTO.photoLink());
+        post.setVideoLink(postPatchReqDTO.videoLink());
+        post.setUpdatedAt(LocalDate.now());
 
         postRepository.save(post);
 
-        return new PostResDTO(post.getId(), post.getTitulo(), post.getDescricao());
+        return new PostResDTO(post.getId(), post.getTitle(), post.getDescription(), post.getPhotoLink(), post.getVideoLink());
     }
 
-    public void delete(Long id) {
+    public void updatePostPrivateTrue(Long id) {
 
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User userAuth = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Post post = postRepository.findByIdAndUser(id, user)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+        Post post = postRepository.findByIdAndUser(id, userAuth)
+                .orElseThrow(() -> new RuntimeException("Post not found."));
 
-        postRepository.delete(post);
+        post.setPrivatePost(true);
+        post.setUpdatedAt(LocalDate.now());
+
+        postRepository.save(post);
+    }
+
+    public void updatePostPrivateFalse(Long id) {
+
+        User userAuth = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Post post = postRepository.findByIdAndUser(id, userAuth)
+                .orElseThrow(() -> new RuntimeException("Post not found."));
+
+        post.setPrivatePost(false);
+        post.setUpdatedAt(LocalDate.now());
+
+        postRepository.save(post);
+    }
+
+    public void deletePost(Long id) {
+
+        User userAuth = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Post post = postRepository.findByIdAndUser(id, userAuth)
+                .orElseThrow(() -> new RuntimeException("Post not found."));
+
+        post.setDeleted(true);
+        post.setUpdatedAt(LocalDate.now());
+
+        postRepository.save(post);
     }
 }

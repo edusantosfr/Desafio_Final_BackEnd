@@ -1,7 +1,6 @@
 package com.teach.gram.controller;
 
 import com.teach.gram.dto.req.user.UserPatchReqDTO;
-import com.teach.gram.dto.res.post.PostResDTO;
 import com.teach.gram.service.UserService;
 import com.teach.gram.dto.req.login.LoginReqDTO;
 import com.teach.gram.dto.req.user.UserReqDTO;
@@ -20,46 +19,42 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    // Registrar novo usuário
     @PostMapping("/register")
     public UserResDTO createUser(
             @RequestBody UserReqDTO dto
-            ) {
-        UserResDTO response = userService.createUser(dto);
-
-        return response;
+    ) {
+        return userService.createUser(dto);
     }
 
+    // Login de usuário
     @PostMapping("/login")
     public LoginResDTO login(
             @RequestBody LoginReqDTO dto
     ) {
-        LoginResDTO response = userService.login(dto);
-
-        return response;
+        return userService.login(dto);
     }
 
+    // Buscar todos os usuários
     @GetMapping
     public ResponseEntity<List<UserResDTO>> getAllUsers() {
-
-        List<UserResDTO> users = userService.getAllUsers();
-
-        return ResponseEntity.ok(users);
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    @PatchMapping("/{id}")
+    // Atualizar perfil de um usuário
+    @PatchMapping("/{id}/update")
     public UserResDTO updateProfile(
             @PathVariable("id") Long id,
             @RequestBody UserPatchReqDTO userPatchReqDTO
     ) {
-        UserResDTO response = userService.updateProfile(id, userPatchReqDTO);
-
-        return response;
+        return userService.updateProfile(id, userPatchReqDTO);
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity deleteProfile(
+    // Deletar perfil de um usuário (soft delete)
+    @PatchMapping("/{id}/delete")
+    public ResponseEntity<Void> deleteProfile(
             @PathVariable("id") Long id
-            ) {
+    ) {
         userService.deleteProfile(id);
 
         return ResponseEntity.noContent().build();

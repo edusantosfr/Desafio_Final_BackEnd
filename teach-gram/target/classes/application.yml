@@ -1,9 +1,9 @@
 spring:
   application:
-    name: security
+    name: teach-gram
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/todo-teach
+    url: jdbc:postgresql://localhost:5432/teach-gram
     username: postgres
     password: root
   jpa:

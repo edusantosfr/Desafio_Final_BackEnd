@@ -31,10 +31,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/users/register").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/users/").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/users").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/users").permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/tasks").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/tasks/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/posts").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/posts/**").authenticated()
 
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 

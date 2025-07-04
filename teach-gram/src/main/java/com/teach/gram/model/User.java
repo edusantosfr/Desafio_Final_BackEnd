@@ -33,7 +33,7 @@ public class User implements UserDetails {
 
     private String profileLink;
 
-    private Boolean deleted = false;
+    private Boolean deleted;
 
     private LocalDate createdAt;
 
