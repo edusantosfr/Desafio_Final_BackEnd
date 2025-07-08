@@ -3,6 +3,7 @@ package com.teach.gram.service;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.teach.gram.dto.res.login.LoginResDTO;
+import com.teach.gram.dto.res.user.UserResDTO;
 import com.teach.gram.model.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -29,10 +30,13 @@ public class TokenService {
                 .withExpiresAt(expirationDate)
                 .sign(algorithm);
 
+
+
         return new LoginResDTO(
                 "Bearer",
                 token,
-                expirationDate.toEpochMilli()
+                expirationDate.toEpochMilli(),
+                new UserResDTO(user.getId(), user.getName(), user.getMail(), user.getUsername(), user.getDescription(), user.getPhone(), user.getProfileLink())
         );
     }
 
@@ -50,6 +54,6 @@ public class TokenService {
 
     private Instant getExpirationDate() {
 
-        return LocalDateTime.now().plusHours(3).toInstant(ZoneOffset.of("-03:00"));
+        return LocalDateTime.now().plusHours(3).toInstant(ZoneOffset.of("-00:10"));
     }
 }

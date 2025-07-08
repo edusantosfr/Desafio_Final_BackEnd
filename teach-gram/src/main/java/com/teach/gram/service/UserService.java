@@ -62,23 +62,23 @@ public class UserService {
 
     public LoginResDTO login(LoginReqDTO dto) {
 
-        if (dto.username() == null || dto.username().isEmpty())
-            throw new RuntimeException("Username cannot be null or empty");
+        if (dto.mail() == null || dto.mail().isEmpty())
+            throw new RuntimeException("E-mail cannot be null or empty");
 
         if (dto.password() == null || dto.password().isEmpty())
             throw new RuntimeException("Password cannot be null or empty");
 
-        Optional<User> optionalUser = userRepository.findByUsername(dto.username());
+        User user = userRepository.findByMail(dto.mail())
+                .orElseThrow(() -> new RuntimeException("User not found."));
 
-        if (optionalUser.isEmpty())
-            throw new RuntimeException("User not found");
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                user.getUsername(),
+                dto.password()
+        );
 
-        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                dto.username(), dto.password());
+        authenticationManager.authenticate(authToken);
 
-        authenticationManager.authenticate(token);
-
-        return tokenService.generateToken(optionalUser.get());
+        return tokenService.generateToken(user);
     }
 
     public List<UserResDTO> getAllUsers() {
