@@ -1,6 +1,7 @@
 package com.teach.gram.controller;
 
 import com.teach.gram.dto.req.user.UserPatchReqDTO;
+import com.teach.gram.model.User;
 import com.teach.gram.service.UserService;
 import com.teach.gram.dto.req.login.LoginReqDTO;
 import com.teach.gram.dto.req.user.UserReqDTO;
@@ -8,6 +9,7 @@ import com.teach.gram.dto.res.login.LoginResDTO;
 import com.teach.gram.dto.res.user.UserResDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,7 +21,7 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    // Registrar novo usuário
+    // Registrar novo usuario
     @PostMapping("/register")
     public UserResDTO createUser(
             @RequestBody UserReqDTO dto
@@ -42,20 +44,20 @@ public class UserController {
     }
 
     // Atualizar perfil de um usuário
-    @PatchMapping("/{id}/update")
+    @PatchMapping("/update")
     public UserResDTO updateProfile(
-            @PathVariable("id") Long id,
             @RequestBody UserPatchReqDTO userPatchReqDTO
     ) {
-        return userService.updateProfile(id, userPatchReqDTO);
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return userService.updateProfile(user.getId(), userPatchReqDTO);
     }
 
-    // Deletar perfil de um usuário (soft delete)
-    @PatchMapping("/{id}/delete")
-    public ResponseEntity<Void> deleteProfile(
-            @PathVariable("id") Long id
-    ) {
-        userService.deleteProfile(id);
+    // Deletar perfil do usuário
+    @PatchMapping("/delete")
+    public ResponseEntity<Void> deleteProfile() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        userService.deleteProfile(user.getId());
 
         return ResponseEntity.noContent().build();
     }

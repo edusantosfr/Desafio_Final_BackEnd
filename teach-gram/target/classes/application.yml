@@ -5,10 +5,10 @@ spring:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/teach-gram
     username: postgres
-    password: root
+    password: host
   jpa:
     hibernate.ddl-auto: update
 
 security:
-  cors: ${FRONT-END}
-  secret: ${SECRET}
+  cors: http://localhost:5173/
+  secret: bla_bla

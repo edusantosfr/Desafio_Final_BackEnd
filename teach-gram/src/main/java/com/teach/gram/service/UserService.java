@@ -71,6 +71,9 @@ public class UserService {
         User user = userRepository.findByMail(dto.mail())
                 .orElseThrow(() -> new RuntimeException("User not found."));
 
+        if (user.getDeleted())
+            throw new RuntimeException("User not found");
+
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 user.getUsername(),
                 dto.password()
