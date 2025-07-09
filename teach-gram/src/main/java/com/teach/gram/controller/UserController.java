@@ -1,5 +1,6 @@
 package com.teach.gram.controller;
 
+import com.teach.gram.dto.req.user.UserInfoPatchReqDTO;
 import com.teach.gram.dto.req.user.UserPatchReqDTO;
 import com.teach.gram.model.User;
 import com.teach.gram.service.UserService;
@@ -53,13 +54,15 @@ public class UserController {
         return userService.getLogedUser(user.getId());
     }
 
+    //Atualizar o perfil de um usuário pelo id
     @GetMapping("/{id}")
-    public UserResDTO getUserById(@PathVariable Long id) {;
-
+    public UserResDTO getUserById(
+            @PathVariable Long id
+    ) {;
         return userService.getUserById(id);
     }
 
-    // Atualizar perfil de um usuário
+    // Atualizar o perfil de um usuário
     @PatchMapping("/update")
     public UserResDTO updateProfile(
             @RequestBody UserPatchReqDTO userPatchReqDTO
@@ -67,6 +70,16 @@ public class UserController {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         return userService.updateProfile(user.getId(), userPatchReqDTO);
+    }
+
+    // Atualizar o perfil de um usuário
+    @PatchMapping("/update/info")
+    public LoginResDTO updateProfileInfo(
+            @RequestBody UserInfoPatchReqDTO userInfoPatchReqDTO
+    ) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return userService.updateProfileInfo(user.getId(), userInfoPatchReqDTO);
     }
 
     // Deletar perfil do usuário

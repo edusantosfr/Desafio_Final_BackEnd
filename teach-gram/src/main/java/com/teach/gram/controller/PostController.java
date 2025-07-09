@@ -19,10 +19,10 @@ public class PostController {
 
     // Criar um novo post
     @PostMapping
-    public PostResDTO createPost(
+    public ResponseEntity<PostResDTO> createPost(
             @RequestBody PostReqDTO dto
     ) {
-        return postService.createPost(dto);
+        return ResponseEntity.ok(postService.createPost(dto));
     }
 
     // Buscar todos os posts do usuário autenticado

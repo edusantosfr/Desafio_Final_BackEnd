@@ -39,8 +39,10 @@ public class SecurityFilter extends OncePerRequestFilter {
 
             Optional<User> userOptional = userRepository.findByUsername(username);
 
-            if (userOptional.isEmpty())
-                throw new RuntimeException("User not found");
+            if (userOptional.isEmpty()) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "User not found");
+                return;
+            }
 
             User user = userOptional.get();
 
