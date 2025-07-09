@@ -8,6 +8,7 @@ import com.teach.gram.dto.res.user.UserResDTO;
 import com.teach.gram.model.User;
 import com.teach.gram.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -98,6 +99,22 @@ public class UserService {
                         user.getProfileLink()
                 ))
                 .toList();
+    }
+
+    public UserResDTO getLogedUser(Long id) {
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found."));
+
+        return new UserResDTO(user.getId(), user.getName(), user.getMail(), user.getUsername(), user.getDescription(), user.getPhone(), user.getProfileLink());
+    }
+
+    public UserResDTO getUserById(Long id) {
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found."));
+
+        return new UserResDTO(user.getId(), user.getName(), user.getMail(), user.getUsername(), user.getDescription(), user.getPhone(), user.getProfileLink());
     }
 
     public UserResDTO updateProfile(Long id, UserPatchReqDTO userPatchReqDTO) {

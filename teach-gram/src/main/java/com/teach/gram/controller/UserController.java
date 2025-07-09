@@ -40,7 +40,23 @@ public class UserController {
     // Buscar todos os usuários
     @GetMapping
     public ResponseEntity<List<UserResDTO>> getAllUsers() {
+
         return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    // Pegar perfil do usuário logado
+    @GetMapping("/loged")
+    public UserResDTO getLogedUser() {
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return userService.getLogedUser(user.getId());
+    }
+
+    @GetMapping("/{id}")
+    public UserResDTO getUserById(@PathVariable Long id) {;
+
+        return userService.getUserById(id);
     }
 
     // Atualizar perfil de um usuário
