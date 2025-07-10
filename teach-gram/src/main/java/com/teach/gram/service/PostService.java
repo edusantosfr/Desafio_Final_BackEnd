@@ -32,6 +32,7 @@ public class PostService {
         post.setDescription(dto.description());
         post.setPhotoLink(dto.photoLink());
         post.setVideoLink(dto.videoLink());
+        post.setPrivatePost(dto.privatePost());
         post.setUser(user);
 
         postRepository.save(post);

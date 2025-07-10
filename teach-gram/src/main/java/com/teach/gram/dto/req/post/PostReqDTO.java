@@ -5,6 +5,7 @@ public record PostReqDTO(
         String title,
         String description,
         String photoLink,
-        String videoLink
+        String videoLink,
+        Boolean privatePost
 ) {
 }
