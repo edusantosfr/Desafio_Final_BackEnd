@@ -34,25 +34,34 @@ public class UserService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    public UserResDTO createUser(UserReqDTO dto) {
+    public UserResDTO createUser(UserReqDTO userReqDTO) {
 
-        if (userRepository.existsByUsername(dto.username()))
-            throw new RuntimeException("Username already in use");
+        if (userRepository.existsByUsername(userReqDTO.username()))
+            throw new RuntimeException("Username em uso");
 
-        if (userRepository.existsByMail(dto.mail()))
-            throw new RuntimeException("Email already in use");
+        if (userRepository.existsByMail(userReqDTO.mail()))
+            throw new RuntimeException("Email em uso");
 
-        if (userRepository.existsByPhone(dto.phone()))
-            throw new RuntimeException("Phone already in use");
+        if (userRepository.existsByPhone(userReqDTO.phone()))
+            throw new RuntimeException("Celular em uso");
+
+        if (userReqDTO.mail() == null || userReqDTO.mail().isEmpty())
+            throw new RuntimeException("E-mail não pode ser nulo");
+
+        if (userReqDTO.password() == null || userReqDTO.password().isEmpty())
+            throw new RuntimeException("Senha não pode ser nula");
+
+        if (userReqDTO.phone() == null || userReqDTO.phone().isEmpty())
+            throw new RuntimeException("Celular não pode ser nulo");
 
         User user = new User();
-        user.setName(dto.name());
-        user.setMail(dto.mail());
-        user.setUsername(dto.username());
-        user.setDescription(dto.description());
-        user.setPhone(dto.phone());
-        user.setPassword(passwordEncoder.encode(dto.password()));
-        user.setProfileLink(dto.profileLink());
+        user.setName(userReqDTO.name());
+        user.setMail(userReqDTO.mail());
+        user.setUsername(userReqDTO.username());
+        user.setDescription(userReqDTO.description());
+        user.setPhone(userReqDTO.phone());
+        user.setPassword(passwordEncoder.encode(userReqDTO.password()));
+        user.setProfileLink(userReqDTO.profileLink());
         user.setCreatedAt(LocalDate.now());
         user.setUpdatedAt(LocalDate.now());
 
@@ -61,23 +70,23 @@ public class UserService {
         return new UserResDTO(user.getId(), user.getName(), user.getMail(), user.getUsername(), user.getDescription(), user.getPhone(), user.getProfileLink());
     }
 
-    public LoginResDTO login(LoginReqDTO dto) {
+    public LoginResDTO login(LoginReqDTO loginReqDTO) {
 
-        if (dto.mail() == null || dto.mail().isEmpty())
-            throw new RuntimeException("E-mail cannot be null or empty");
+        if (loginReqDTO.mail() == null || loginReqDTO.mail().isEmpty())
+            throw new RuntimeException("E-mail não pode ser nulo");
 
-        if (dto.password() == null || dto.password().isEmpty())
-            throw new RuntimeException("Password cannot be null or empty");
+        if (loginReqDTO.password() == null || loginReqDTO.password().isEmpty())
+            throw new RuntimeException("Senha não pode ser nula");
 
-        User user = userRepository.findByMail(dto.mail())
-                .orElseThrow(() -> new RuntimeException("User not found."));
+        User user = userRepository.findByMail(loginReqDTO.mail())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         if (user.getDeleted())
-            throw new RuntimeException("User not found");
+            throw new RuntimeException("Usuário não encontrado");
 
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 user.getUsername(),
-                dto.password()
+                loginReqDTO.password()
         );
 
         authenticationManager.authenticate(authToken);
@@ -104,7 +113,7 @@ public class UserService {
     public UserResDTO getLogedUser(Long id) {
 
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found."));
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         return new UserResDTO(user.getId(), user.getName(), user.getMail(), user.getUsername(), user.getDescription(), user.getPhone(), user.getProfileLink());
     }
@@ -112,7 +121,7 @@ public class UserService {
     public UserResDTO getUserById(Long id) {
 
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found."));
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         return new UserResDTO(user.getId(), user.getName(), user.getMail(), user.getUsername(), user.getDescription(), user.getPhone(), user.getProfileLink());
     }
@@ -122,11 +131,11 @@ public class UserService {
         User userAuth = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!userAuth.getId().equals(id)) {
-            throw new RuntimeException("You are not allowed to update this profile.");
+            throw new RuntimeException("Você não pode atualizar esse perfil");
         }
 
         User user = userRepository.findById(userAuth.getId())
-                .orElseThrow(() -> new RuntimeException("User not found."));
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         user.setProfileLink(userPatchReqDTO.profileLink());
         user.setName(userPatchReqDTO.name());
@@ -144,11 +153,11 @@ public class UserService {
         User userAuth = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!userAuth.getId().equals(id)) {
-            throw new RuntimeException("You are not allowed to update this profile.");
+            throw new RuntimeException("Você não pode atualizar esse perfil");
         }
 
         User user = userRepository.findById(userAuth.getId())
-                .orElseThrow(() -> new RuntimeException("User not found."));
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         user.setName(userInfoPatchReqDTO.name());
         user.setMail(userInfoPatchReqDTO.mail());
@@ -170,11 +179,11 @@ public class UserService {
         User userAuth = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!userAuth.getId().equals(id)) {
-            throw new RuntimeException("You are not allowed to delete this profile.");
+            throw new RuntimeException("Você não pode deletar esse perfil");
         }
 
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found."));
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         user.setDeleted(true);
         user.setUpdatedAt(LocalDate.now());
