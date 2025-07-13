@@ -120,7 +120,7 @@ public class UserService {
 
     public UserResDTO getUserById(Long id) {
 
-        User user = userRepository.findById(id)
+        User user = userRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         return new UserResDTO(user.getId(), user.getName(), user.getMail(), user.getUsername(), user.getDescription(), user.getPhone(), user.getProfileLink());

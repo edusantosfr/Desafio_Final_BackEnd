@@ -54,8 +54,8 @@ public class UserController {
         return userService.getLogedUser(user.getId());
     }
 
-    //Atualizar o perfil de um usuário pelo id
-    @GetMapping("/{id}")
+    //Pegar o perfil de um usuário pelo id
+    @GetMapping("/user/{id}")
     public UserResDTO getUserById(
             @PathVariable Long id
     ) {;

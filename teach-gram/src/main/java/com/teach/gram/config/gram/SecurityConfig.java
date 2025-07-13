@@ -31,8 +31,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/users/register").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/users").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/users").permitAll()
 
                         .requestMatchers(HttpMethod.PATCH, "/users/delete").authenticated()
                         .requestMatchers(HttpMethod.PATCH, "/users/update").authenticated()

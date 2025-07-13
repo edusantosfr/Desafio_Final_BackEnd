@@ -1,12 +1,15 @@
 package com.teach.gram.dto.res.post;
 
-public record PostResDTO(
+import java.time.LocalDateTime;
+
+public record PostTimeResDTO(
 
         Long id,
         String title,
         String description,
         String photoLink,
         String videoLink,
-        Integer likes
+        Integer likes,
+        LocalDateTime createdAt
 ) {
 }

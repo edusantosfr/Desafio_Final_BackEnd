@@ -2,15 +2,19 @@ package com.teach.gram.service;
 
 import com.teach.gram.dto.req.post.PostPatchReqDTO;
 import com.teach.gram.dto.req.post.PostReqDTO;
-import com.teach.gram.dto.res.post.PostResDTO;
+import com.teach.gram.dto.res.post.PostTimeAndUserResDTO;
+import com.teach.gram.dto.res.post.PostTimeResDTO;
+import com.teach.gram.dto.res.user.UserResDTO;
 import com.teach.gram.model.Post;
 import com.teach.gram.model.User;
 import com.teach.gram.repository.PostRepository;
+import com.teach.gram.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -18,11 +22,13 @@ public class PostService {
 
     @Autowired
     private PostRepository postRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-    public PostResDTO createPost(PostReqDTO dto) {
+    public PostTimeResDTO createPost(PostReqDTO dto) {
 
         if (dto.title().isEmpty())
-            throw new RuntimeException("Title cannot be empty");
+            throw new RuntimeException("Título não pode estar em branco");
 
         Post post = new Post();
 
@@ -34,78 +40,133 @@ public class PostService {
         post.setVideoLink(dto.videoLink());
         post.setPrivatePost(dto.privatePost());
         post.setUser(user);
+        post.setCreatedAt(LocalDateTime.now());
+        post.setUpdatedAt(LocalDateTime.now());
 
         postRepository.save(post);
 
-        return new PostResDTO(post.getId(), post.getTitle(), post.getDescription(), post.getPhotoLink(), post.getVideoLink());
+        return new PostTimeResDTO(post.getId(), post.getTitle(), post.getDescription(), post.getPhotoLink(), post.getVideoLink(), post.getLikes(), post.getCreatedAt());
     }
 
-    public List<PostResDTO> getAllMyPosts() {
+    public List<PostTimeResDTO> getAllMyPosts() {
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         List<Post> posts = postRepository.findByUser(user);
 
         return posts.stream()
-                .map(post -> new PostResDTO(
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+                .map(post -> new PostTimeResDTO(
                         post.getId(),
                         post.getTitle(),
                         post.getDescription(),
                         post.getPhotoLink(),
-                        post.getVideoLink()
+                        post.getVideoLink(),
+                        post.getLikes(),
+                        post.getCreatedAt()
                 ))
                 .toList();
     }
 
-    public List<PostResDTO> getPublicAndActivePostsByUserId(Long userId) {
+    public List<PostTimeResDTO> getPublicAndActivePostsByUserId(Long userId) {
         
         List<Post> posts = postRepository.findByUserIdAndPrivatePostFalseAndDeletedFalse(userId);
 
         return posts.stream()
-                .map(post -> new PostResDTO(
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+                .map(post -> new PostTimeResDTO(
                         post.getId(),
                         post.getTitle(),
                         post.getDescription(),
                         post.getPhotoLink(),
-                        post.getVideoLink()
+                        post.getVideoLink(),
+                        post.getLikes(),
+                        post.getCreatedAt()
                 ))
                 .toList();
     }
 
-    public PostResDTO getMyPostById(Long id) {
+    public List<PostTimeAndUserResDTO> getRecentPublicAndActivePosts() {
+
+        List<Post> posts = postRepository.findByPrivatePostFalseAndDeletedFalse();
+
+        return posts.stream()
+                .filter(post -> !post.getUser().getDeleted())
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+                .limit(10)
+                .map(post -> {
+                    User user = post.getUser();
+
+                    UserResDTO userDto = new UserResDTO(
+                            user.getId(),
+                            user.getName(),
+                            user.getMail(),
+                            user.getUsername(),
+                            user.getDescription(),
+                            user.getPhone(),
+                            user.getProfileLink()
+                    );
+
+                    return new PostTimeAndUserResDTO(
+                            post.getId(),
+                            post.getTitle(),
+                            post.getDescription(),
+                            post.getPhotoLink(),
+                            post.getVideoLink(),
+                            post.getLikes(),
+                            post.getCreatedAt(),
+                            userDto
+                    );
+                })
+                .toList();
+    }
+
+    public PostTimeResDTO getMyPostById(Long id) {
 
         User userAuth = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Post post = postRepository.findByIdAndUser(id, userAuth)
-                .orElseThrow(() -> new RuntimeException("Post not found."));
+                .orElseThrow(() -> new RuntimeException("Post não encontrado"));
 
-        return new PostResDTO(post.getId(), post.getTitle(), post.getDescription(), post.getPhotoLink(), post.getVideoLink());
+        return new PostTimeResDTO(post.getId(), post.getTitle(), post.getDescription(), post.getPhotoLink(), post.getVideoLink(), post.getLikes(), post.getCreatedAt());
     }
 
-    public PostResDTO getPostById(Long id) {
+    public PostTimeResDTO getPostById(Long id) {
 
         Post post = postRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Post not found."));
+                .orElseThrow(() -> new RuntimeException("Post não encontrado"));
 
-        return new PostResDTO(post.getId(), post.getTitle(), post.getDescription(), post.getPhotoLink(), post.getVideoLink());
+        return new PostTimeResDTO(post.getId(), post.getTitle(), post.getDescription(), post.getPhotoLink(), post.getVideoLink(), post.getLikes(), post.getCreatedAt());
     }
 
-    public PostResDTO updatePost(Long id, PostPatchReqDTO postPatchReqDTO) {
+    public void updatePostLikes(Long id) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Post não encontrado"));
+
+
+        post.setLikes(post.getLikes() + 1);
+        System.out.println("PATCH chegou com ID: " + id);
+        post.setUpdatedAt(LocalDateTime.now());
+
+        postRepository.save(post);
+    }
+
+    public PostTimeResDTO updatePost(Long id, PostPatchReqDTO postPatchReqDTO) {
 
         User userAuth = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Post post = postRepository.findByIdAndUser(id, userAuth)
-                .orElseThrow(() -> new RuntimeException("Post not found."));
+                .orElseThrow(() -> new RuntimeException("Post não encontrado"));
 
         post.setTitle(postPatchReqDTO.title());
         post.setDescription(postPatchReqDTO.description());
         post.setPhotoLink(postPatchReqDTO.photoLink());
         post.setVideoLink(postPatchReqDTO.videoLink());
-        post.setUpdatedAt(LocalDate.now());
+        post.setUpdatedAt(LocalDateTime.now());
 
         postRepository.save(post);
 
-        return new PostResDTO(post.getId(), post.getTitle(), post.getDescription(), post.getPhotoLink(), post.getVideoLink());
+        return new PostTimeResDTO(post.getId(), post.getTitle(), post.getDescription(), post.getPhotoLink(), post.getVideoLink(), post.getLikes(), post.getCreatedAt());
     }
 
     public void updatePostPrivateTrue(Long id) {
@@ -113,10 +174,10 @@ public class PostService {
         User userAuth = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Post post = postRepository.findByIdAndUser(id, userAuth)
-                .orElseThrow(() -> new RuntimeException("Post not found."));
+                .orElseThrow(() -> new RuntimeException("Post não encontrado"));
 
         post.setPrivatePost(true);
-        post.setUpdatedAt(LocalDate.now());
+        post.setUpdatedAt(LocalDateTime.now());
 
         postRepository.save(post);
     }
@@ -126,10 +187,10 @@ public class PostService {
         User userAuth = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Post post = postRepository.findByIdAndUser(id, userAuth)
-                .orElseThrow(() -> new RuntimeException("Post not found."));
+                .orElseThrow(() -> new RuntimeException("Post não encontrado"));
 
         post.setPrivatePost(false);
-        post.setUpdatedAt(LocalDate.now());
+        post.setUpdatedAt(LocalDateTime.now());
 
         postRepository.save(post);
     }
@@ -139,10 +200,10 @@ public class PostService {
         User userAuth = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Post post = postRepository.findByIdAndUser(id, userAuth)
-                .orElseThrow(() -> new RuntimeException("Post not found."));
+                .orElseThrow(() -> new RuntimeException("Post não encontrado"));
 
         post.setDeleted(true);
-        post.setUpdatedAt(LocalDate.now());
+        post.setUpdatedAt(LocalDateTime.now());
 
         postRepository.save(post);
     }

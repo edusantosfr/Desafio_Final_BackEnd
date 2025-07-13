@@ -2,7 +2,8 @@ package com.teach.gram.controller;
 
 import com.teach.gram.dto.req.post.PostPatchReqDTO;
 import com.teach.gram.dto.req.post.PostReqDTO;
-import com.teach.gram.dto.res.post.PostResDTO;
+import com.teach.gram.dto.res.post.PostTimeAndUserResDTO;
+import com.teach.gram.dto.res.post.PostTimeResDTO;
 import com.teach.gram.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,47 +20,60 @@ public class PostController {
 
     // Criar um novo post
     @PostMapping("/create")
-    public ResponseEntity<PostResDTO> createPost(
+    public ResponseEntity<PostTimeResDTO> createPost(
             @RequestBody PostReqDTO postReqDTO
     ) {
         return ResponseEntity.ok(postService.createPost(postReqDTO));
     }
 
-    // Buscar todos os posts do usuário autenticado
-    @GetMapping
-    public ResponseEntity<List<PostResDTO>> getAllMyPosts() {
+    // Buscar todos os posts do usuário logado
+    @GetMapping("/allMyPosts")
+    public ResponseEntity<List<PostTimeResDTO>> getAllMyPosts() {
         return ResponseEntity.ok(postService.getAllMyPosts());
     }
 
     // Buscar posts públicos e ativos de um usuário específico
-    @GetMapping("/users/{userId}/public")
-    public ResponseEntity<List<PostResDTO>> getPublicAndActivePosts(
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<PostTimeResDTO>> getPublicAndActivePosts(
             @PathVariable Long userId
     ) {
         return ResponseEntity.ok(postService.getPublicAndActivePostsByUserId(userId));
     }
 
-    // Buscar meu post pelo ID
+    // Buscar posts públicos e ativos de um usuário específico
+    @GetMapping("/users/public")
+    public ResponseEntity<List<PostTimeAndUserResDTO>> getRecentPublicAndActivePosts(
+    ) {
+        return ResponseEntity.ok(postService.getRecentPublicAndActivePosts());
+    }
+
+    // Buscar meu post pelo ID X
     @GetMapping("/{id}")
-    public ResponseEntity<PostResDTO> getMyPostById(
+    public ResponseEntity<PostTimeResDTO> getMyPostById(
             @PathVariable Long id
     ) {
         return ResponseEntity.ok(postService.getMyPostById(id));
     }
 
-    // Buscar qualquer post pelo ID
+    // Buscar qualquer post pelo ID X
     @GetMapping("/posts/{id}")
-    public ResponseEntity<PostResDTO> getPostById(
+    public ResponseEntity<PostTimeResDTO> getPostById(
             @PathVariable Long id
     ) {
-        PostResDTO post = postService.getPostById(id);
+        PostTimeResDTO post = postService.getPostById(id);
 
         return ResponseEntity.ok(post);
     }
 
+    @PatchMapping("/{id}/update/likes")
+    public ResponseEntity<Void> updatePostLikes(@PathVariable Long id) {
+        postService.updatePostLikes(id);
+        return ResponseEntity.ok().build();
+    }
+
     // Atualizar um post (título, descrição, etc.)
     @PatchMapping("/{id}/update")
-    public ResponseEntity<PostResDTO> updatePost(
+    public ResponseEntity<PostTimeResDTO> updatePost(
             @PathVariable Long id,
             @RequestBody PostPatchReqDTO postPatchReqDTO
     ) {
