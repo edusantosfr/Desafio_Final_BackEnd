@@ -1,14 +1,13 @@
 package com.teach.gram.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.teach.gram.domain.Role;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Table(name = "users")
@@ -40,6 +39,25 @@ public class User implements UserDetails {
     private LocalDate updatedAt;
 
     private String description;
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_friends",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "friend_id")
+    )
+    @JsonIgnore
+    private Set<User> friends = new HashSet<>();
+
+    public void addFriend(User friend) {
+        this.friends.add(friend);
+        friend.getFriends().add(this);
+    }
+
+    public void removeFriend(User friend) {
+        this.friends.remove(friend);
+        friend.getFriends().remove(this);
+    }
 
     @ElementCollection(fetch = FetchType.EAGER, targetClass = Role.class)
     @Enumerated(EnumType.STRING)
@@ -149,6 +167,14 @@ public class User implements UserDetails {
         } else {
             this.roles = roles;
         }
+    }
+
+    public Set<User> getFriends() {
+        return friends;
+    }
+
+    public void setFriends(Set<User> friends) {
+        this.friends = friends;
     }
 
     @Override

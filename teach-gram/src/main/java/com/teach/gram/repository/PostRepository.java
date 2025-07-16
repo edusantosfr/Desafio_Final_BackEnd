@@ -20,4 +20,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByUserIdAndPrivatePostFalseAndDeletedFalse(Long userId);
 
     List<Post> findByPrivatePostFalseAndDeletedFalse();
+
+    List<Post> findByUserAndDeletedFalse(User user);
 }

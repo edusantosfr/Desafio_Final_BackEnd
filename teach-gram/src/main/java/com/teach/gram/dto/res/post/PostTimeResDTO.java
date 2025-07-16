@@ -10,6 +10,7 @@ public record PostTimeResDTO(
         String photoLink,
         String videoLink,
         Integer likes,
+        Boolean privatePost,
         LocalDateTime createdAt
 ) {
 }

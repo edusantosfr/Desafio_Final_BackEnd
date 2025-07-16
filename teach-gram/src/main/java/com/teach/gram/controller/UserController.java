@@ -14,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/users")
@@ -80,6 +81,40 @@ public class UserController {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         return userService.updateProfileInfo(user.getId(), userInfoPatchReqDTO);
+    }
+
+    // Adicionar um usuário como amigo
+    @PostMapping("/friends/{friendId}/add")
+    public ResponseEntity<Void> addFriend(
+            @PathVariable Long friendId
+    ) {
+        userService.addFriend(friendId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Remover um usuário de amigo
+    @DeleteMapping("/friends/{friendId}/remove")
+    public ResponseEntity<Void> removeFriend(
+            @PathVariable Long friendId
+    ) {
+        userService.removeFriend(friendId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Pegar todos os amigos do usuário pelo id
+    @GetMapping("/friends/{userId}")
+    public ResponseEntity<Set<UserResDTO>> getUserListFriends(
+            @PathVariable Long userId
+    ) {
+        Set<UserResDTO> friends = userService.getUserListFriends(userId);
+        return ResponseEntity.ok(friends);
+    }
+
+    // Pegar todos os amigos do usuário logado
+    @GetMapping("/friends")
+    public ResponseEntity<Set<UserResDTO>> getMyListFriends() {
+        Set<UserResDTO> friends = userService.getMyListFriends();
+        return ResponseEntity.ok(friends);
     }
 
     // Deletar perfil do usuário

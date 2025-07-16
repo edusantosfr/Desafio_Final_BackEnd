@@ -47,7 +47,7 @@ public class PostController {
         return ResponseEntity.ok(postService.getRecentPublicAndActivePosts());
     }
 
-    // Buscar meu post pelo ID X
+    // Buscar meu post pelo ID 
     @GetMapping("/{id}")
     public ResponseEntity<PostTimeResDTO> getMyPostById(
             @PathVariable Long id
@@ -55,16 +55,7 @@ public class PostController {
         return ResponseEntity.ok(postService.getMyPostById(id));
     }
 
-    // Buscar qualquer post pelo ID X
-    @GetMapping("/posts/{id}")
-    public ResponseEntity<PostTimeResDTO> getPostById(
-            @PathVariable Long id
-    ) {
-        PostTimeResDTO post = postService.getPostById(id);
-
-        return ResponseEntity.ok(post);
-    }
-
+    // Atualizar os likes de um post
     @PatchMapping("/{id}/update/likes")
     public ResponseEntity<Void> updatePostLikes(@PathVariable Long id) {
         postService.updatePostLikes(id);
@@ -78,26 +69,6 @@ public class PostController {
             @RequestBody PostPatchReqDTO postPatchReqDTO
     ) {
         return ResponseEntity.ok(postService.updatePost(id, postPatchReqDTO));
-    }
-
-    // Tornar post privado
-    @PatchMapping("/{id}/private")
-    public ResponseEntity<Void> updatePostPrivateTrue(
-            @PathVariable Long id
-    ) {
-        postService.updatePostPrivateTrue(id);
-
-        return ResponseEntity.noContent().build();
-    }
-
-    // Tornar post público
-    @PatchMapping("/{id}/public")
-    public ResponseEntity<Void> updatePostPrivateFalse(
-            @PathVariable Long id
-    ) {
-        postService.updatePostPrivateFalse(id);
-
-        return ResponseEntity.noContent().build();
     }
 
     // Deletar um post (soft delete, provavelmente)

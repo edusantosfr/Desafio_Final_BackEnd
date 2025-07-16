@@ -45,14 +45,14 @@ public class PostService {
 
         postRepository.save(post);
 
-        return new PostTimeResDTO(post.getId(), post.getTitle(), post.getDescription(), post.getPhotoLink(), post.getVideoLink(), post.getLikes(), post.getCreatedAt());
+        return new PostTimeResDTO(post.getId(), post.getTitle(), post.getDescription(), post.getPhotoLink(), post.getVideoLink(), post.getLikes(), post.getPrivatePost(), post.getCreatedAt());
     }
 
     public List<PostTimeResDTO> getAllMyPosts() {
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        List<Post> posts = postRepository.findByUser(user);
+        List<Post> posts = postRepository.findByUserAndDeletedFalse(user);
 
         return posts.stream()
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
@@ -63,6 +63,7 @@ public class PostService {
                         post.getPhotoLink(),
                         post.getVideoLink(),
                         post.getLikes(),
+                        post.getPrivatePost(),
                         post.getCreatedAt()
                 ))
                 .toList();
@@ -81,6 +82,7 @@ public class PostService {
                         post.getPhotoLink(),
                         post.getVideoLink(),
                         post.getLikes(),
+                        post.getPrivatePost(),
                         post.getCreatedAt()
                 ))
                 .toList();
@@ -128,15 +130,7 @@ public class PostService {
         Post post = postRepository.findByIdAndUser(id, userAuth)
                 .orElseThrow(() -> new RuntimeException("Post não encontrado"));
 
-        return new PostTimeResDTO(post.getId(), post.getTitle(), post.getDescription(), post.getPhotoLink(), post.getVideoLink(), post.getLikes(), post.getCreatedAt());
-    }
-
-    public PostTimeResDTO getPostById(Long id) {
-
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Post não encontrado"));
-
-        return new PostTimeResDTO(post.getId(), post.getTitle(), post.getDescription(), post.getPhotoLink(), post.getVideoLink(), post.getLikes(), post.getCreatedAt());
+        return new PostTimeResDTO(post.getId(), post.getTitle(), post.getDescription(), post.getPhotoLink(), post.getVideoLink(), post.getLikes(), post.getPrivatePost(), post.getCreatedAt());
     }
 
     public void updatePostLikes(Long id) {
@@ -162,37 +156,12 @@ public class PostService {
         post.setDescription(postPatchReqDTO.description());
         post.setPhotoLink(postPatchReqDTO.photoLink());
         post.setVideoLink(postPatchReqDTO.videoLink());
+        post.setPrivatePost(postPatchReqDTO.privatePost());
         post.setUpdatedAt(LocalDateTime.now());
 
         postRepository.save(post);
 
-        return new PostTimeResDTO(post.getId(), post.getTitle(), post.getDescription(), post.getPhotoLink(), post.getVideoLink(), post.getLikes(), post.getCreatedAt());
-    }
-
-    public void updatePostPrivateTrue(Long id) {
-
-        User userAuth = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        Post post = postRepository.findByIdAndUser(id, userAuth)
-                .orElseThrow(() -> new RuntimeException("Post não encontrado"));
-
-        post.setPrivatePost(true);
-        post.setUpdatedAt(LocalDateTime.now());
-
-        postRepository.save(post);
-    }
-
-    public void updatePostPrivateFalse(Long id) {
-
-        User userAuth = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        Post post = postRepository.findByIdAndUser(id, userAuth)
-                .orElseThrow(() -> new RuntimeException("Post não encontrado"));
-
-        post.setPrivatePost(false);
-        post.setUpdatedAt(LocalDateTime.now());
-
-        postRepository.save(post);
+        return new PostTimeResDTO(post.getId(), post.getTitle(), post.getDescription(), post.getPhotoLink(), post.getVideoLink(), post.getLikes(), post.getPrivatePost(), post.getCreatedAt());
     }
 
     public void deletePost(Long id) {

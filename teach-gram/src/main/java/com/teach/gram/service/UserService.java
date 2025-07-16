@@ -17,7 +17,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -189,5 +190,76 @@ public class UserService {
         user.setUpdatedAt(LocalDate.now());
 
         userRepository.save(user);
+    }
+
+    public void addFriend(Long friendId) {
+
+        User authUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        User user = userRepository.findById(authUser.getId())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        User friend = userRepository.findById(friendId)
+                .orElseThrow(() -> new RuntimeException("Amigo não encontrado"));
+
+        if (user.getFriends().contains(friend)) {
+            throw new RuntimeException("Vocês já são amigos.");
+        }
+
+        user.addFriend(friend);
+        userRepository.save(user);
+    }
+
+    public void removeFriend(Long friendId) {
+
+        User authUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        User user = userRepository.findById(authUser.getId())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        User friend = userRepository.findById(friendId)
+                .orElseThrow(() -> new RuntimeException("Amigo não encontrado"));
+
+        user.removeFriend(friend);
+        userRepository.save(user);
+    }
+
+    public Set<UserResDTO> getMyListFriends() {
+        User authUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        User user = userRepository.findById(authUser.getId())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        return user.getFriends()
+                .stream()
+                .map(friend -> new UserResDTO(
+                        friend.getId(),
+                        friend.getName(),
+                        friend.getMail(),
+                        friend.getUsername(),
+                        friend.getDescription(),
+                        friend.getPhone(),
+                        friend.getProfileLink()
+                ))
+                .collect(Collectors.toSet());
+    }
+
+    public Set<UserResDTO> getUserListFriends(Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        return user.getFriends()
+                .stream()
+                .map(friend -> new UserResDTO(
+                        friend.getId(),
+                        friend.getName(),
+                        friend.getMail(),
+                        friend.getUsername(),
+                        friend.getDescription(),
+                        friend.getPhone(),
+                        friend.getProfileLink()
+                ))
+                .collect(Collectors.toSet());
     }
 }
